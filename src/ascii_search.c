@@ -1,9 +1,10 @@
 /*
- * Author: Ming Li (adagio.ming@gmail.com)
+ * Author: Ming Li(adagio.ming@gmail.com)
  * Date: 2018/12/11
- * Note-
- *  1: code follows C99 standard.
+ * Note:
+ *  1: code follows C99 standard compilation.
  *  2: code has only been used on MacOS.
+ *
  */
 
 #include <stdio.h>
@@ -15,6 +16,12 @@
 
 #define HEX 0x30
 #define DECIMAL 0x40
+
+static int array_data_conv(char **, int, int **);
+static int str_data_conv(char *, int, int **);
+static int is_hex_or_decimal(char *, int *);
+static void print_err_msg(int err, void *msg);
+static void usage(void);
 
 typedef enum {
     OP_SUCCESS = 0x0,
@@ -62,11 +69,6 @@ static void usage(void)
     printf("\tascii -i [index], return ascii character of given index,\n");
     printf("\tascii -i [index1 index2 index3...], return a string with corresponding ascii values.\n");
 }
-
-static int array_data_conv(char **, int, int **);
-static int str_data_conv(char *, int, int **);
-static int is_hex_or_decimal(char *, int *);
-static void print_err_msg(int err, void *msg);
 
 /*
  * err: error code,
@@ -147,7 +149,6 @@ static int is_hex_or_decimal(char *in, int *format) {
  * function: convert argv vector string data into real data when argc == 3;
  */
 static int array_data_conv(char **in, int len, int **out) {
-
     if (!out) {
         print_err_msg(NULL_POINTER_ERR, 0);
         return -1;
@@ -160,16 +161,21 @@ static int array_data_conv(char **in, int len, int **out) {
     }
     memset(conv_data_p, ~0x0, sizeof (*conv_data_p));
 
-    int pos = 0;
+    int pos;
     int data_format = DECIMAL;
     int step_base;
     char *current;
     int tail_idx = 0;
 
     /* trim each string argument */
-    for (; pos<len; pos++) {
+    for (pos=0; pos<len; pos++) {
         current = in[pos];
-        tail_idx = strlen(current) - 1;
+        tail_idx = strlen(in[pos]) -1;
+
+        if (current[tail_idx] == ',' || current[tail_idx] == ';') {
+            in[pos][tail_idx] = 0;
+            tail_idx -= 1;
+        }
 
         if (current[0] == '0' && (current[1] == 'x' || current[1] == 'X')) {
             if(data_format == DECIMAL) {
@@ -177,10 +183,6 @@ static int array_data_conv(char **in, int len, int **out) {
             }
             in[pos] += 2;
             continue;
-        }
-
-        if (current[tail_idx] == ',' || current[tail_idx] == ';') {
-            tail_idx -= 1;
         }
 
         if (current[tail_idx] == 'h' || current[tail_idx] == 'H') {
@@ -256,6 +258,7 @@ static int str_data_conv(char *in, int count, int **out) {
             *c = 0;
         }
     }
+
     if(!is_hex_or_decimal(current, data_format == DECIMAL? &data_format : NULL)) {
         free(conv_data_p);
         conv_data_p = NULL;
@@ -343,7 +346,7 @@ int main(int argc, char **argv)
         printf("Hex: 20\n");
         return 1;
     } else if (argc == 2) {
-
+        /* for help usage.*/
         if(!strncmp(argv[1], "-?", 2) || !strncmp(argv[1], "--help", 6) || !strncmp(argv[1], "-h", 2)) {
             usage();
             return -1;
@@ -460,6 +463,7 @@ int main(int argc, char **argv)
             printf("Result String:\n");
             for (i=0; i<arg_count; i++) {
                 putchar(ascii[index_list[i]][0]);
+                /*printf("%c", ascii[index_list[i]][0]);*/
             }
             printf("\nHex Dump:\n");
             for (i=0; i<arg_count; i++) {
