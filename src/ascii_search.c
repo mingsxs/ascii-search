@@ -13,12 +13,12 @@
 #define TRUE 0x1
 #define FALSE 0x0
 
-#define HEX 0x3
-#define DECIMAL 0x4
+#define HEX 0x30
+#define DECIMAL 0x40
 
 typedef enum {
     OP_SUCCESS = 0x0,
-    OPERATION_FAIL = 0x1,
+    OPERATION_FAIL,
     MALLOC_ERR,
     NON_GRAPHIC_CHARACTER_ERR,
     NON_GRAPHIC_INDEX_ERR,
@@ -190,12 +190,7 @@ static int array_data_conv(char **in, int len, int **out) {
             in[pos][tail_idx] = 0;
         }
     }
-#ifdef DEBUG
-    for (pos=0; pos<len; pos++) {
-        printf("%s ", in[pos]);
-    }
-    putchar('\n');
-#endif
+
     /* check data content */
     for(pos =0; pos<len; pos++) {
         if(!is_hex_or_decimal(in[pos], data_format == DECIMAL? &data_format : NULL)) {
@@ -220,13 +215,7 @@ static int array_data_conv(char **in, int len, int **out) {
     }
 
     *out = conv_data_p;
-#ifdef DEBUG
-    printf("\nDEBUG: ");
-    for(pos=0; pos<len; pos++) {
-        printf("%d ", (*out)[pos]);
-    }
-    printf("\nData Format %s\n", data_format==DECIMAL? "Decimal":"Hex");
-#endif
+
     return OP_SUCCESS;
 }
 
@@ -281,9 +270,7 @@ static int str_data_conv(char *in, int count, int **out) {
         change = 0;
         step_base = 16;
     }
-#ifdef DEBUG
-    printf("current: %s\n", current);
-#endif
+
     conv_data_p[0] = strtol(current, NULL, step_base);
 
     pos = 1;
@@ -303,9 +290,7 @@ static int str_data_conv(char *in, int count, int **out) {
                 *c = 0;
             }
         }
-#ifdef DEBUG
-        printf("current: %s\n", current);
-#endif
+
         if(!is_hex_or_decimal(current, data_format == DECIMAL? &data_format : NULL)) {
             free(conv_data_p);
             conv_data_p = NULL;
@@ -344,25 +329,12 @@ static int str_data_conv(char *in, int count, int **out) {
     }
 
     *out = conv_data_p;
-#ifdef DEBUG
-    printf("\nDEBUG: ");
-    for(pos=0; pos<count; pos++) {
-        printf("%d ", (*out)[pos]);
-    }
 
-    printf("\nData Format %s\n", data_format==DECIMAL? "Decimal":"Hex");
-#endif
     return OP_SUCCESS;
 }
 
 int main(int argc, char **argv)
 {
-#if 0
-    printf ("argc count:%d\n", argc);
-    for(int i=1; i<argc; i++) {
-        printf("%s\n", argv[i]);
-    }
-#endif
     if (argc == 1){
         /* This is for special case */
         printf("(space) ascii index:\n");
@@ -472,33 +444,6 @@ int main(int argc, char **argv)
         }
         arg_count += 1;
         if (multi_args) {
-#if 0
-            int *id_list = (int *)malloc(arg_count * sizeof(int));
-            if(id_list == NULL) {
-                printf("MALLOC FAILURE\n");
-                return -1;
-            }
-            memset(id_list, 0x0, arg_count * sizeof (int));
-            char *delimiter = ",;";
-            char *token = NULL;
-
-            id_list[0] = strtol(strtok(argv[2], delimiter), NULL, 0);
-
-            i = 1;
-            while ((token = strtok(NULL, delimiter)) != NULL) {
-                id_list[i] = strtol(token, NULL, 0);
-                if (id_list[i] < 32 || id_list[i] > 126) {
-                    if (id_list[i] < 0 || id_list[i] > 127) {
-                        printf("index overflow, specify it between 0-127\n");
-                    } else {
-                        printf("invalid index: [%d | 0x%x], only graphic number is allowed, specify it between 32-126\n", id_list[i], id_list[i]);
-                    }
-
-                    return -1;
-                }
-                i++;
-            }
-#endif
             if((str_data_conv(argv[2], arg_count, &index_list)) != OP_SUCCESS) {
                 return -1;
             }
@@ -515,7 +460,6 @@ int main(int argc, char **argv)
             printf("Result String:\n");
             for (i=0; i<arg_count; i++) {
                 putchar(ascii[index_list[i]][0]);
-                /*printf("%c", ascii[index_list[i]][0]);*/
             }
             printf("\nHex Dump:\n");
             for (i=0; i<arg_count; i++) {
@@ -530,13 +474,6 @@ int main(int argc, char **argv)
             index_list = NULL;
             return 0;
         } else {
-#if 0
-            int idx = strtol(param, NULL, 0);
-            if(idx == 0 && (strcmp(argv[2], "0") && strcmp(argv[2], "0x0") && strcmp(argv[2], "0x00") && strcmp(argv[2], "0X0"))){
-                printf("only numeral string is allowed as input\n");
-                return 0;
-            }
-#endif
             if((array_data_conv(&argv[2], 1, &index_list)) != OP_SUCCESS) {
                 return -1;
             }
@@ -582,6 +519,7 @@ int main(int argc, char **argv)
     } else {
         usage();
     }
+
     return 0;
 }
 
