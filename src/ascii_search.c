@@ -17,8 +17,8 @@
 #define HEX 0x30
 #define DECIMAL 0x40
 
-static int array_data_conv(char **, int, int **);
-static int str_data_conv(char *, int, int **);
+static int array_data_conv(char **, int, int *, int **);
+static int str_data_conv(char *, int, int *, int **);
 static int is_hex_or_decimal(char *, int *);
 static void print_err_msg(int err, void *msg);
 static void usage(void);
@@ -148,8 +148,8 @@ static int is_hex_or_decimal(char *in, int *format) {
  * out: ascii index list.
  * function: convert argv vector string data into real data when argc == 3;
  */
-static int array_data_conv(char **in, int len, int **out) {
-    if (!out) {
+static int array_data_conv(char **in, int len, int* format, int **out) {
+    if (!out || !format) {
         print_err_msg(NULL_POINTER_ERR, 0);
         return -1;
     }
@@ -216,6 +216,7 @@ static int array_data_conv(char **in, int len, int **out) {
         conv_data_p[pos] = strtol(in[pos], NULL, step_base);
     }
 
+    *format = data_format;
     *out = conv_data_p;
 
     return OP_SUCCESS;
@@ -226,8 +227,8 @@ static int array_data_conv(char **in, int len, int **out) {
  * out: index list array.
  * function: convert string argv vector into real data when argc > 3.
  */
-static int str_data_conv(char *in, int count, int **out) {
-    if (!out) {
+static int str_data_conv(char *in, int count, int *format, int **out) {
+    if (!out || !format) {
         print_err_msg(NULL_POINTER_ERR, 0);
         return -1;
     }
@@ -331,6 +332,7 @@ static int str_data_conv(char *in, int count, int **out) {
         }
     }
 
+    *format = data_format;
     *out = conv_data_p;
 
     return OP_SUCCESS;
@@ -340,10 +342,11 @@ int main(int argc, char **argv)
 {
     if (argc == 1){
         /* This is for special case */
-        printf("(space) ascii index:\n");
-        printf("Dec: 32\n");
-        printf("Oct: 40\n");
-        printf("Hex: 20\n");
+        printf("Data Input:\t Character\n");
+        printf("(space) ascii:\n");
+        printf("Dec:\t\t 32\n");
+        printf("Oct:\t\t 40\n");
+        printf("Hex:\t\t 20\n");
         return 1;
     } else if (argc == 2) {
         /* for help usage.*/
@@ -393,15 +396,15 @@ int main(int argc, char **argv)
                 }
             }
 
-            printf("Result:\nDecimal: ");
+            printf("Data Input:\t String\nDecimal:\t ");
             for(i=0; i<arg_count; i++) {
                 printf("%d, ", id_list[i]);
             }
-            printf("\nHex: ");
+            printf("\nHex:\t\t ");
             for(i=0; i<arg_count; i++) {
                 printf("0x%x, ", id_list[i]);
             }
-            printf("\nOct: ");
+            printf("\nOct:\t\t ");
             for(i=0; i<arg_count; i++) {
                 printf("%o, ", id_list[i]);
             }
@@ -419,17 +422,20 @@ int main(int argc, char **argv)
                 }
             }
             if (found) {
-                printf("Index: %d\n", i);
-                printf("Hex: 0x%x\n", i);
-                printf("Oct: %o\n", i);
+                printf("Data Input:\t Character\n");
+                printf("Decimal:\t %d\n", i);
+                printf("Hex:\t\t 0x%x\n", i);
+                printf("Oct:\t\t %o\n", i);
             } else {
                 print_err_msg(CHARACTER_NOT_FOUND_ERR, (void *)&ch);
                 return -1;
             }
         }
     } else if(argc == 3 && !strcmp(argv[1], "-i")) {
+
         char *param = argv[2];
         int len = strlen(argv[2]);
+        int data_format;
 
         int multi_args = FALSE;
         int arg_count = 0;
@@ -447,7 +453,7 @@ int main(int argc, char **argv)
         }
         arg_count += 1;
         if (multi_args) {
-            if((str_data_conv(argv[2], arg_count, &index_list)) != OP_SUCCESS) {
+            if((str_data_conv(argv[2], arg_count, &data_format, &index_list)) != OP_SUCCESS) {
                 return -1;
             }
 
@@ -460,39 +466,42 @@ int main(int argc, char **argv)
                     return -1;
                 }
             }
-            printf("Result String:\n");
+            printf("Data Input:\t %s\nResult String:\t ", (data_format==DECIMAL)? "Decimal" : "Hex");
             for (i=0; i<arg_count; i++) {
                 putchar(ascii[index_list[i]][0]);
-                /*printf("%c", ascii[index_list[i]][0]);*/
             }
-            printf("\nHex Dump:\n");
+            printf("\nHex:\t\t ");
             for (i=0; i<arg_count; i++) {
-                printf("0x%x ", index_list[i]);
+                printf("0x%x, ", index_list[i]);
             }
-            printf("\nOct Dump:\n");
+            printf("\nOct:\t\t ");
             for (i=0; i<arg_count; i++) {
-                printf("%o ", index_list[i]);
+                printf("%o, ", index_list[i]);
             }
             printf("\n");
             free(index_list);
             index_list = NULL;
             return 0;
         } else {
-            if((array_data_conv(&argv[2], 1, &index_list)) != OP_SUCCESS) {
+            if((array_data_conv(&argv[2], 1, &data_format, &index_list)) != OP_SUCCESS) {
                 return -1;
             }
             if (*index_list >=0 && *index_list < 128) {
-                printf("%d indexs to %s\n", *index_list, ascii[*index_list]);
-                printf("Oct: %o\n", *index_list);
-                printf("Hex: %x\n", *index_list);
+                printf("Data Input:\t %s\n", (data_format==DECIMAL)? "Decimal" : "Hex");
+                printf("%d indexes to\t %s\n", *index_list, ascii[*index_list]);
+                printf("Oct:\t\t %o\n", *index_list);
+                printf("Hex:\t\t %x\n", *index_list);
             } else {
                 print_err_msg(INDEX_OVERFLOW_ERR, (void *)index_list);
             }
         }
     } else if (argc > 3 && !strcmp(argv[1], "-i")){
-        int i;
         int *index_list;
-        if((array_data_conv(&argv[2], argc-2, &index_list)) != OP_SUCCESS) {
+        int data_format;
+
+        int i;
+
+        if((array_data_conv(&argv[2], argc-2, &data_format, &index_list)) != OP_SUCCESS) {
             return -1;
         }
 
@@ -505,17 +514,18 @@ int main(int argc, char **argv)
                 return -1;
             }
         }
-        printf("Result String:\n");
+
+        printf("Data Input:\t %s\nResult String:\t ", (data_format==DECIMAL)? "Decimal":"Hex");
         for(i=0; i<argc-2; i++) {
             putchar(ascii[index_list[i]][0]);
         }
-        printf("\nHex Dump:\n");
+        printf("\nHex:\t\t ");
         for(i=0; i<argc-2; i++) {
-            printf("0x%x ", index_list[i]);
+            printf("0x%x, ", index_list[i]);
         }
-        printf("\nOct Dump:\n");
+        printf("\nOct\t\t :  ");
         for(i=0; i<argc-2; i++) {
-            printf("%o ", index_list[i]);
+            printf("%o, ", index_list[i]);
         }
         printf("\n");
         free(index_list);
