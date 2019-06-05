@@ -44,5 +44,5 @@ If some invalid data is taken, it will print error message.
 <img src="https://github.com/mingsxs/ascii_search/blob/master/screenshot/wrong-format-detect.gif" /> 
    
 - #### overflow detection  
-If input data exceeds `127`, it will print overflow error message.   
+If input data exceeds `127`, it will print `overflow` error message.   
 <img src="https://github.com/mingsxs/ascii_search/blob/master/screenshot/overflow-detect.gif" />   
