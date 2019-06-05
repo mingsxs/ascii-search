@@ -523,7 +523,7 @@ int main(int argc, char **argv)
         for(i=0; i<argc-2; i++) {
             printf("0x%x, ", index_list[i]);
         }
-        printf("\nOct\t\t :  ");
+        printf("\nOct:\t\t ");
         for(i=0; i<argc-2; i++) {
             printf("%o, ", index_list[i]);
         }
