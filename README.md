@@ -3,11 +3,15 @@ A very handy utility to convert/search between ascii strings/characters and its 
 
 ## Introduction  
 
-This tool is implemented with `C`, using standard libraries `stdio.h`, `stdlib.h`, `string.h`, which means portability on various platforms. It will be very convinient  
+This simple utility is implemented with `C`, using standard libraries `stdio.h`, `stdlib.h` and `string.h` only, which lends enough portability among various platforms. It's designed for coding especially for embedded coding. If you often deal with massive, tedious `VPD` fields programing with `Hex` or `Decimal` data format, this utility should be helpful to transform or validate data.
 
 ## Compiling  
 
+Just go with `gcc`/`clang` or any other `C` compiler, the binary file `ascii` under folder `./bin/MacOS` is compiled by `clang` of MacOS `Mojave` with `-O2` level compiler optimization. If you are Mac users, use this executable directly.   
   
-## Help
+## Help  
+
+Only `--help`, `-h` and `-?` options given will get `help` usage, otherwise, the command argument will be treated as a input string.  
+
 
 ## How to use
