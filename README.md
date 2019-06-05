@@ -36,7 +36,7 @@ Command doesn't take `Null` argument, so if no argument given, default argument 
   
 ## Feature  
 - #### data format detection 
-Utility detects data automatically, if a number string containing character `A-F` or `a-f` is given, string will be taken as `Hex` data, otherwise, it wil be taken as `Decimal` data, you can also add prefix `0x`/`0X` or suffix `h`/`H` to mark it as a `Hex` format data.   
+Utility detects data automatically, if a number string containing character `A-F` or `a-f` is given, string will be taken as `Hex` data, otherwise, it wil be taken as `Decimal` data, you can also add prefix `0x`/`0X` or suffix `h`/`H` to mark it as a `Hex` format data string.   
 <img src="https://github.com/mingsxs/ascii_search/blob/master/screenshot/format-detect.gif" />   
     
 If some invalid data is taken, it will print error message.   
