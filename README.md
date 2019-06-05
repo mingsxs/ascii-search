@@ -1,5 +1,5 @@
 # ascii_search
-  A very handy tool to convert/search between `ascii` strings/characters and its corresponding `ascii` value.
+  A very handy tool to convert/search between `ascii` strings/characters and corresponding `ascii` values.
 
 ## Introduction  
 
