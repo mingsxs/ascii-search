@@ -3,7 +3,7 @@
 
 ## Introduction  
 
-  This simple utility is implemented with `C`, using standard libraries `stdio.h`, `stdlib.h` and `string.h` only, which lends enough portability among various platforms. It's designed for coding especially for embedded coding. If you often deal with massive, tedious `VPD` fields programing with `Hex` or `Decimal` data format, this utility should be helpful to transform or validate data.
+  This simple utility is implemented with `C`, using standard libraries `stdio.h`, `stdlib.h` and `string.h` only, which lends enough portability among various platforms. It's designed for coding especially for embedded coding. If you often deal with massive, tedious `VPD field` programing with `Hex` or `Decimal` data format, this utility should be helpful to transform or validate data.
 
 ## Compiling  
 
