@@ -11,7 +11,7 @@
   
 ## Help  
 
-  Only `--help`, `-h` and `-?` options given will get `help` usage, otherwise, the argument will be treated as a input string.  
+  Only `--help`, `-h` or `-?` option given will get `help` usage, otherwise, the argument will be treated as an input string.  
 <p align="center">
 <img src="https://github.com/mingsxs/ascii_search/blob/master/screenshot/help.png" />
 </p>
