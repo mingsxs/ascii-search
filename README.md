@@ -18,7 +18,7 @@
 
 ## How to use 
 - #### `space`  
-Command doesn't take `Null` argument, so if no argument given, default argument is `space`.  
+Command doesn't take `Null` argument, so if no argument is given, default argument is `space`.  
    
 <img src="https://github.com/mingsxs/ascii_search/blob/master/screenshot/help-space.gif" />
 
@@ -36,13 +36,13 @@ Command doesn't take `Null` argument, so if no argument given, default argument 
   
 ## Feature  
 - #### data format detection 
-Utility detects data automatically, if a number string containing character `A-F` or `a-f` is given, string will be taken as `Hex` data, otherwise, it wil be taken as `Decimal` data, you can also add prefix `0x`/`0X` or suffix `h`/`H` to mark it as a `Hex` format data string.   
+Utility can detect input data format, if a string number containing character `A-F` or `a-f` is given, string will be taken as `Hex` data, otherwise, it wil be taken as `Decimal` data, you can also add prefix `0x`/`0X` or suffix `h`/`H` to mark it as a `Hex` format data string.   
 <img src="https://github.com/mingsxs/ascii_search/blob/master/screenshot/format-detect.gif" />   
     
-If some invalid data is taken, it will print error message.   
+If some invalid data is taken, `wrong-format` error message will be printed.   
    
 <img src="https://github.com/mingsxs/ascii_search/blob/master/screenshot/wrong-format-detect.gif" /> 
    
-- #### overflow detection  
-If input data exceeds `127`, it will print `overflow` error message.   
+- #### data overflow detection  
+If input data exceeds `127`, `overflow` error message will be printed.   
 <img src="https://github.com/mingsxs/ascii_search/blob/master/screenshot/overflow-detect.gif" />   
