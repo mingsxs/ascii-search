@@ -12,6 +12,8 @@ Just go with `gcc`/`clang` or any other `C` compiler, the binary file `ascii` un
 ## Help  
 
 Only `--help`, `-h` and `-?` options given will get `help` usage, otherwise, the command argument will be treated as a input string.  
-
+<p align="center">
+<img src="https://github.com/mingsxs/ascii_search/tree/master/screenshot/help.png" />
+</p>
 
 ## How to use
