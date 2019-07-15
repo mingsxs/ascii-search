@@ -236,6 +236,8 @@ static int array_data_conv(char **in, int count, int* format, int **out, int *ar
         }
     }
 
+    free(array_index_word_count);
+
     *format = data_format;
     *out = conv_data_p;
     *array_count = word_count;
