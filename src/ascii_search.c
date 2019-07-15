@@ -17,7 +17,7 @@
 #define HEX 0x30
 #define DECIMAL 0x40
 
-static int array_data_conv(char **, int, int *, int **);
+static int array_data_conv(char **, int, int *, int **, int *);
 static int str_data_conv(char *, int, int *, int **);
 static int is_hex_or_decimal(char *, int *);
 static void print_err_msg(int err, void *msg);
@@ -144,40 +144,50 @@ static int is_hex_or_decimal(char *in, int *format) {
 
 /*
  * in: argument strings in argv vector,
- * len: argument string count,
+ * count: argument string count,
  * out: ascii index list.
  * function: convert argv vector string data into real data when argc == 3;
  */
-static int array_data_conv(char **in, int len, int* format, int **out) {
+static int array_data_conv(char **in, int count, int* format, int **out, int *array_count) {
     if (!out || !format) {
         print_err_msg(NULL_POINTER_ERR, 0);
         return -1;
     }
 
-    int *conv_data_p = (int *)malloc(len * sizeof(int));
-    if (!conv_data_p) {
+    int *array_index_word_count = (int *)malloc(count*sizeof(int));
+    if (!array_index_word_count) {
         print_err_msg(MALLOC_ERR, 0);
         return -1;
     }
-    memset(conv_data_p, ~0x0, sizeof (*conv_data_p));
+    memset(array_index_word_count, 0x0, count*sizeof(int));
 
-    int pos;
+    int pos, i, k;
     int data_format = DECIMAL;
-    int step_base;
-    char *current;
+    int step_base, shift, word_count;
+    char *word = NULL;
     int tail_idx = 0;
 
+    int *conv_data_p = NULL;
+
     /* trim each string argument */
-    for (pos=0; pos<len; pos++) {
-        current = in[pos];
+    for (pos=0, word_count=count; pos<count; pos++) {
+        word = in[pos];
         tail_idx = strlen(in[pos]) -1;
 
-        if (current[tail_idx] == ',' || current[tail_idx] == ';') {
+        for(i=0,k=1; i<tail_idx; i++) 
+            if(word[i]==',' || word[i]==';') {
+                in[pos][i] = '\0';
+                k++;
+                word_count++;
+            }
+        array_index_word_count[pos] = k;
+
+        if (word[tail_idx] == ',' || word[tail_idx] == ';') {
             in[pos][tail_idx] = 0;
             tail_idx -= 1;
         }
 
-        if (current[0] == '0' && (current[1] == 'x' || current[1] == 'X')) {
+        if (word[0] == '0' && (word[1] == 'x' || word[1] == 'X')) {
             if(data_format == DECIMAL) {
                 data_format = HEX;
             }
@@ -185,7 +195,7 @@ static int array_data_conv(char **in, int len, int* format, int **out) {
             continue;
         }
 
-        if (current[tail_idx] == 'h' || current[tail_idx] == 'H') {
+        if (word[tail_idx] == 'h' || word[tail_idx] == 'H') {
             if(data_format == DECIMAL) {
                 data_format = HEX;
             }
@@ -194,14 +204,19 @@ static int array_data_conv(char **in, int len, int* format, int **out) {
     }
 
     /* check data content */
-    for(pos =0; pos<len; pos++) {
+    for(pos =0; pos<count; pos++) {
         if(!is_hex_or_decimal(in[pos], data_format == DECIMAL? &data_format : NULL)) {
-            free(conv_data_p);
-            conv_data_p = NULL;
             print_err_msg(INVAL_DATA_FORMAT_ERR, (void *)in[pos]);
             return -1;
         }
     }
+
+    conv_data_p = (int *)malloc(word_count*sizeof(int));
+    if(!conv_data_p) {
+        print_err_msg(MALLOC_ERR, 0);
+        return -1;
+    }
+    memset(conv_data_p, ~0x0, word_count*sizeof(int));
 
     if(data_format == DECIMAL) {
         step_base = 10;
@@ -212,12 +227,18 @@ static int array_data_conv(char **in, int len, int* format, int **out) {
         return -1;
     }
 
-    for(pos=0; pos<len; pos++) {
-        conv_data_p[pos] = strtol(in[pos], NULL, step_base);
+    k = 0;
+    for(pos=0; pos<count; pos++) {
+        for(i=0,shift=0; i<array_index_word_count[pos]; i++) {
+            if(i>0) k++;
+            conv_data_p[pos+k] = strtol(in[pos]+shift, NULL, step_base);
+            shift = shift + strlen(in[pos]+shift) + 1;
+        }
     }
 
     *format = data_format;
     *out = conv_data_p;
+    *array_count = word_count;
 
     return OP_SUCCESS;
 }
@@ -244,8 +265,8 @@ static int str_data_conv(char *in, int count, int *format, int **out) {
     char *c;
 
 
-    conv_data_p = (int *) malloc(count * sizeof (int));
-    memset(conv_data_p,  ~0x0, sizeof *conv_data_p);
+    conv_data_p = (int *) malloc(count*sizeof(int));
+    memset(conv_data_p,  ~0x0, count*sizeof(int));
 
     current = strtok(in, delimiter);
     c = current;
@@ -340,6 +361,12 @@ static int str_data_conv(char *in, int count, int *format, int **out) {
 
 int main(int argc, char **argv)
 {
+    int word_count;
+    int multi_args = FALSE;
+    int arg_count;
+    int data_format;
+    int *index_list = NULL;
+    int i;
     if (argc == 1){
         /* This is for special case */
         printf("Data Input:\t Character\n");
@@ -355,23 +382,21 @@ int main(int argc, char **argv)
             return -1;
         }
 
-        int multi_args = FALSE;
-        int arg_count = strlen(argv[1]);
+        arg_count = strlen(argv[1]);
         int found = FALSE;
 
         if(arg_count > 1) multi_args = TRUE;
 
-        int i;
         char ch = 0;
 
         if (multi_args) {
-            int *id_list = (int *)malloc(arg_count * sizeof(int));
+            index_list = (int *)malloc(arg_count * sizeof(int));
 
-            if (id_list == NULL) {
+            if (index_list == NULL) {
                 print_err_msg(MALLOC_ERR, 0);
                 return -1;
             }
-            memset(id_list, 0x0, arg_count * sizeof (int));
+            memset(index_list, 0x0, arg_count*sizeof (int));
 
             for (int pos=0; pos<arg_count; pos++) {
                 ch = argv[1][pos];
@@ -388,7 +413,7 @@ int main(int argc, char **argv)
                     }
                 }
                 if(found) {
-                    id_list[pos] = i;
+                    index_list[pos] = i;
                     found = FALSE;
                 } else {
                     print_err_msg(CHARACTER_NOT_FOUND_ERR, (void *)&ch);
@@ -398,19 +423,19 @@ int main(int argc, char **argv)
 
             printf("Data Input:\t String\nDecimal:\t ");
             for(i=0; i<arg_count; i++) {
-                printf("%d, ", id_list[i]);
+                printf("%d, ", index_list[i]);
             }
             printf("\nHex:\t\t ");
             for(i=0; i<arg_count; i++) {
-                printf("0x%x, ", id_list[i]);
+                printf("0x%x, ", index_list[i]);
             }
             printf("\nOct:\t\t ");
             for(i=0; i<arg_count; i++) {
-                printf("%o, ", id_list[i]);
+                printf("%o, ", index_list[i]);
             }
             putchar('\n');
-            free(id_list);
-            id_list = NULL;
+            free(index_list);
+            index_list = NULL;
 
             return 0;
         } else {
@@ -433,15 +458,10 @@ int main(int argc, char **argv)
         }
     } else if(argc == 3 && !strcmp(argv[1], "-i")) {
 
-        char *param = argv[2];
         int len = strlen(argv[2]);
-        int data_format;
 
-        int multi_args = FALSE;
-        int arg_count = 0;
-        int *index_list = NULL;
-
-        int i;
+        arg_count = 0;
+        index_list = NULL;
 
         for (i=0; i<len-1; i++) {
             if (argv[2][i] == ',' || argv[2][i] == ';') {
@@ -479,11 +499,13 @@ int main(int argc, char **argv)
                 printf("%o, ", index_list[i]);
             }
             printf("\n");
-            free(index_list);
-            index_list = NULL;
+            if(index_list) {
+                free(index_list);
+                index_list = NULL;
+            }
             return 0;
         } else {
-            if((array_data_conv(&argv[2], 1, &data_format, &index_list)) != OP_SUCCESS) {
+            if((array_data_conv(&argv[2], 1, &data_format, &index_list, &word_count)) != OP_SUCCESS) {
                 return -1;
             }
             if (*index_list >=0 && *index_list < 128) {
@@ -494,14 +516,14 @@ int main(int argc, char **argv)
             } else {
                 print_err_msg(INDEX_OVERFLOW_ERR, (void *)index_list);
             }
+            if(index_list) {
+                free(index_list);
+                index_list = NULL;
+            }
         }
     } else if (argc > 3 && !strcmp(argv[1], "-i")){
-        int *index_list;
-        int data_format;
 
-        int i;
-
-        if((array_data_conv(&argv[2], argc-2, &data_format, &index_list)) != OP_SUCCESS) {
+        if((array_data_conv(&argv[2], argc-2, &data_format, &index_list, &word_count)) != OP_SUCCESS) {
             return -1;
         }
 
@@ -516,20 +538,22 @@ int main(int argc, char **argv)
         }
 
         printf("Data Input:\t %s\nResult String:\t ", (data_format==DECIMAL)? "Decimal":"Hex");
-        for(i=0; i<argc-2; i++) {
+        for(i=0; i<word_count; i++) {
             putchar(ascii[index_list[i]][0]);
         }
         printf("\nHex:\t\t ");
-        for(i=0; i<argc-2; i++) {
+        for(i=0; i<word_count; i++) {
             printf("0x%x, ", index_list[i]);
         }
         printf("\nOct:\t\t ");
-        for(i=0; i<argc-2; i++) {
+        for(i=0; i<word_count; i++) {
             printf("%o, ", index_list[i]);
         }
         printf("\n");
-        free(index_list);
-        index_list = NULL;
+        if(index_list) {
+            free(index_list);
+            index_list = NULL;
+        }
     } else {
         usage();
     }
