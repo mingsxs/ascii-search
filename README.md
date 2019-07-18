@@ -1,4 +1,4 @@
-# ascii_search
+# ascii-search
   A very handy tool to convert/search between `ascii` strings/characters and corresponding `ascii` values.
 
 ## Introduction  
