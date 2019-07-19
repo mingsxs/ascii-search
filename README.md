@@ -7,7 +7,7 @@
 
 ## Compiling  
 
-  Just go with [`gcc`](https://gcc.gnu.org/)/[`clang`](https://clang.llvm.org/) or any other `C` compiler following [`C99`](https://en.wikipedia.org/wiki/C99) standard, the executable `ascii` under folder `./bin/MacOS` is compiled by `clang` of MacOS [`Mojave`](https://www.apple.com/macos/mojave/) with `-O2` level compiler optimization. If you are Mac users, use this executable directly.   
+  Just go with [`gcc`](https://gcc.gnu.org/)/[`clang`](https://clang.llvm.org/) or any other `C` compiler following [`C99/C11/C14`](https://en.wikipedia.org/wiki/C99) standard, the executable `ascii` under folder `./bin/MacOS` is compiled by `clang` of MacOS [`Mojave`](https://www.apple.com/macos/mojave/) with `-O2` level compiler optimization. If you are Mac users, use this executable directly.   
   
 ## Help  
 
