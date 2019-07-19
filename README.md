@@ -18,7 +18,7 @@
 
 ## How to use 
 - #### `space`  
-Command doesn't take `Null` argument, so if no argument is specified, default argument is `space`.  
+Command doesn't take `Null` argument, so if no argument is specified, default argument is `whitespace`.  
    
 <img src="https://github.com/mingsxs/ascii_search/blob/master/screenshot/help-space.gif" />
 
